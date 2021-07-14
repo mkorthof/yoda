@@ -44,6 +44,7 @@
   become: yes
   roles:
     - common
+    - { role: certbot, when: acme_certificates }
     - certificates
 
 
@@ -52,7 +53,6 @@
   become: yes
   roles:
     - apache
-    - { role: acme_certificates, when: yoda_environment == "testing" }
     - python3
     - yoda_portal
     - irods_icommands

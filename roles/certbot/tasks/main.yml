@@ -1,0 +1,15 @@
+---
+# copyright Utrecht University
+
+- name: Install certbot
+  become: yes
+  snap:
+    name: certbot
+    classic: true
+
+
+- name: Ensure symlink to certbot exists
+  file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
