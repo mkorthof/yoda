@@ -221,12 +221,20 @@ Listen {{ yoda_davrods_anonymous_port }}
     #   the certificate is encrypted, then you will be prompted for a
     #   pass phrase.  Note that a kill -HUP will prompt again.  A new
     #   certificate can be generated using the genkey(1) command.
-    SSLCertificateFile      {{ openssl_certs_dir }}/{{ openssl_crt_signed_and_chain }}
+    {% if acme_certificates %}
+    SSLCertificateFile      /etc/letsencrypt/live/{{ yoda_davrods_anonymous_fqdn }}/fullchain.pem
+    {% else %}
+    SSLCertificateFile      /etc/pki/tls/certs/localhost_and_chain.crt
+    {% endif %}
 
     #   Server Private Key:
     #   If the key is not combined with the certificate, use this
     #   directive to point at the key file.  Keep in mind that if
     #   you've both a RSA and a DSA private key you can configure
     #   both in parallel (to also allow the use of DSA ciphers, etc.)
-    SSLCertificateKeyFile   {{ openssl_private_dir }}/{{ openssl_key_signed }}
+    {% if acme_certificates %}
+    SSLCertificateKeyFile   /etc/letsencrypt/live/{{ yoda_davrods_anonymous_fqdn }}/privkey.pem
+    {% else %}
+    SSLCertificateKeyFile   /etc/pki/tls/private/localhost.key
+    {% endif %}
 </VirtualHost>

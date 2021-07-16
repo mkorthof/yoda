@@ -63,6 +63,17 @@
   notify: Restart Apache webserver
 
 
+- name: Check if davrods certificate exists
+  stat:
+    path: "/etc/letsencrypt/live/{{ yoda_davrods_fqdn }}/fullchain.pem"
+  register: letsencrypt_fullchain
+
+
+- name: Generate davrods certificate
+  command: "certbot certonly --standalone --noninteractive --agree-tos --email l.r.westerhof@uu.nl -d {{ yoda_davrods_fqdn }} --pre-hook 'systemctl stop httpd' --post-hook 'systemctl start httpd'"
+  when: not ansible_check_mode and not letsencrypt_fullchain.stat.exists
+
+
 - name: Copy davrods Apache configuration
   template:
     src: davrods-vhost.conf.j2
@@ -71,6 +82,17 @@
     group: root
     mode: 0644
   notify: Restart Apache webserver
+
+
+- name: Check if davrods anonymous certificate exists
+  stat:
+    path: "/etc/letsencrypt/live/{{ yoda_davrods_anonymous_fqdn }}/fullchain.pem"
+  register: letsencrypt_fullchain
+
+
+- name: Generate davrods anonymous certificate
+  command: "certbot certonly --standalone --noninteractive --agree-tos --email l.r.westerhof@uu.nl -d {{ yoda_davrods_anonymous_fqdn }} --pre-hook 'systemctl stop httpd' --post-hook 'systemctl start httpd'"
+  when: not ansible_check_mode and not letsencrypt_fullchain.stat.exists
 
 
 - name: Copy davrods anonymous Apache configuration

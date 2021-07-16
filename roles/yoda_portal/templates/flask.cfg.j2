@@ -22,7 +22,11 @@ SESSION_FILE_DIR            = '{{ flask_session_file_dir }}'
 IRODS_ICAT_HOSTNAME = '{{ irods_icat_fqdn }}'
 IRODS_ICAT_PORT     = '{{ irods_icat_port }}'
 IRODS_DEFAULT_ZONE  = '{{ irods_zone }}'
-IRODS_SSL_CA_FILE   = '{{ openssl_certs_dir ~ "/" ~ openssl_crt_signed_and_chain }}'
+{% if acme_certificates %}
+IRODS_SSL_CA_FILE   = '/etc/letsencrypt/live/{{ yoda_portal_fqdn }}/fullchain.pem';
+{% else %}
+IRODS_SSL_CA_FILE   = '/etc/pki/tls/certs/localhost_and_chain.crt'
+{% endif %}
 IRODS_AUTH_SCHEME   = '{{ irods_authentication_scheme }}'
 IRODS_CLIENT_OPTIONS_FOR_SSL = {
     "irods_client_server_policy": "CS_NEG_REQUIRE",

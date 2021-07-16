@@ -1,6 +1,26 @@
 ---
 # copyright Utrecht University
 
+- name: Allow public to port for Yoda Public in firewall
+  firewalld:
+    port: '{{ yoda_public_port }}/tcp'
+    permanent: true
+    state: enabled
+    immediate: yes
+  notify: Restart firewall
+
+
+- name: Check if Yoda Public certificate exists
+  stat:
+    path: "/etc/letsencrypt/live/{{ yoda_public_fqdn }}/fullchain.pem"
+  register: letsencrypt_fullchain
+
+
+- name: Generate Yoda Public certificate
+  command: "certbot certonly --standalone --noninteractive --agree-tos --email l.r.westerhof@uu.nl -d {{ yoda_public_fqdn }} --pre-hook 'systemctl stop httpd' --post-hook 'systemctl start httpd'"
+  when: not ansible_check_mode and not letsencrypt_fullchain.stat.exists
+
+
 - name: Copy Yoda Public Apache configuration
   template:
     src: yoda-public-vhost.conf.j2
@@ -9,12 +29,3 @@
     group: root
     mode: 0644
   notify: Restart Apache webserver
-
-
-- name: Allow public to port for Yoda Public in firewall
-  firewalld:
-    port: '{{ yoda_public_port }}/tcp'
-    permanent: true
-    state: enabled
-    immediate: yes
-  notify: Restart firewall

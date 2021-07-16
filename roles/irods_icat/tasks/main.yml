@@ -260,9 +260,19 @@
     - '{{ irods_port_range_begin }}-{{ irods_port_range_end }}/tcp'
   notify: Restart firewall
 
+- name: Check if iRODS iCAT certificate exists
+  stat:
+    path: "/etc/letsencrypt/live/{{ irods_icat_fqdn }}/fullchain.pem"
+  register: letsencrypt_fullchain
+
+
+- name: Generate iRODS iCAT certificate
+  command: "certbot certonly --standalone --noninteractive --agree-tos --email l.r.westerhof@uu.nl -d {{ irods_icat_fqdn }} --pre-hook 'systemctl stop httpd' --post-hook 'systemctl start httpd'"
+  when: not ansible_check_mode and not letsencrypt_fullchain.stat.exists
+
 
 - name: Ensure private key file is available for iRODS
-  command: 'cp {{ openssl_private_dir }}/{{ openssl_key_signed }} {{ openssl_key_signed }}'
+  command: 'cp /etc/letsencrypt/live/{{ irods_icat_fqdn }}/privkey.pem {{ openssl_key_signed }}'
   args:
     chdir: '/etc/irods'
     creates: '{{ openssl_key_signed }}'
@@ -270,7 +280,7 @@
 
 - name: Ensure CA chain with signed certificate is present
   file:
-    src: "{{ openssl_certs_dir }}/{{ openssl_crt_signed_and_chain }}"
+    src: "/etc/letsencrypt/live/{{ irods_icat_fqdn }}/fullchain.pem"
     dest: "/etc/irods/{{ openssl_crt_signed_and_chain }}"
     state: link
 

@@ -77,6 +77,17 @@
     mode: '0644'
 
 
+- name: Check if Yoda Portal certificate exists
+  stat:
+    path: "/etc/letsencrypt/live/{{ yoda_portal_fqdn }}/fullchain.pem"
+  register: letsencrypt_fullchain
+
+
+- name: Generate Yoda Portal certificate
+  command: "certbot certonly --standalone --noninteractive --agree-tos --email l.r.westerhof@uu.nl -d {{ yoda_portal_fqdn }} --pre-hook 'systemctl stop httpd' --post-hook 'systemctl start httpd'"
+  when: not ansible_check_mode and not letsencrypt_fullchain.stat.exists
+
+
 - name: Copy Yoda Portal virtual host config for Apache
   template:
     src: "yoda-portal-vhost.conf.j2"
