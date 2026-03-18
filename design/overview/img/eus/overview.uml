@@ -1,11 +1,5 @@
 @startuml
-
-skinparam componentStyle uml2
-skinparam defaultFontName CMU Serif
-skinparam defaultFontSize 15
-skinparam padding 2
-skinparam shadowing false
-skinparam dpi 200
+!include ../../../../theme.puml
 
 rectangle "External user server" {
 
@@ -53,7 +47,7 @@ note right of SMTP
     External user webservice can:
     - Send invitation mail to new users
     - Send password reset link to existing users
-    - Send user creation succes status to group manager
+    - Send user creation success status to group manager
 end note
 
 @enduml
